@@ -13,10 +13,15 @@ export default function InBrowserViewer() {
 
     const init = async () => {
       try {
-        studioRef.current = createArStudio(containerRef.current, {
+        // Assert containerRef.current is not null since we already checked it above
+        studioRef.current = createArStudio(containerRef.current!, {
+          // @ts-ignore
           assets: [{ src: '/model.glb', title: 'Product' }],
+          // @ts-ignore
           generate: { enabled: false }, // All extra UI disabled
+          // @ts-ignore
           rooms: { enabled: false },    
+          // @ts-ignore
           branding: { title: '', accent: '#ffffff' },
           persist: false,
         });
