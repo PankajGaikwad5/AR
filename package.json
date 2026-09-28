@@ -9,9 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@colyseus/schema": "^3.0.76",
+    "3d-ar-studio": "^0.3.1",
+    "colyseus.js": "^0.16.22",
     "next": "16.3.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
