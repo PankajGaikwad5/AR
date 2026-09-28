@@ -57,7 +57,7 @@ export default function InBrowserViewer() {
       */}
       <style>{`
         /* Hide everything we don't want */
-        .ars-dock, .ars-empty, .ars-selbar, .ars-status, .ars-chip, .ars-tray, .ars-title, .ars-back, .ars-count, .ars-room-label, .ars-spacer {
+        .ars-dock, .ars-empty, .ars-selbar, .ars-tray, .ars-title, .ars-back, .ars-count, .ars-room-label, .ars-spacer {
           display: none !important;
           opacity: 0 !important;
           visibility: hidden !important;
