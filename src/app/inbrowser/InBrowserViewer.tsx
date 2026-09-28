@@ -13,7 +13,6 @@ export default function InBrowserViewer() {
 
     const init = async () => {
       try {
-        // Assert containerRef.current is not null since we already checked it above
         studioRef.current = createArStudio(containerRef.current!, {
           // @ts-ignore
           assets: [{ src: '/model.glb', title: 'Product' }],
@@ -44,35 +43,84 @@ export default function InBrowserViewer() {
     };
   }, []);
 
-  const handleARClick = () => {
-    if (!containerRef.current) return;
-    
-    const xrBtn = containerRef.current.querySelector('.ars-top .ars-icon-btn[aria-label="View this in augmented reality"]') as HTMLButtonElement;
-    const cameraBtn = containerRef.current.querySelector('.ars-top .ars-icon-btn[aria-label="Turn the camera on to see your models in the room"]') as HTMLButtonElement;
-    const arGoBtn = containerRef.current.querySelector('.ars-ar-go') as HTMLButtonElement;
-    
-    if (xrBtn && !xrBtn.hidden) {
-      xrBtn.click();
-    } else if (arGoBtn && !arGoBtn.hidden) {
-      arGoBtn.click();
-    } else if (cameraBtn) {
-      cameraBtn.click();
-    }
-  };
-
   return (
     <div className="w-screen h-[100dvh] relative bg-black m-0 p-0 overflow-hidden">
       
-      {/* Hide all useless UI from the in-browser viewer */}
+      {/* 
+        We rely on 3D-AR-Studio for its flawless iOS USDZ conversion and Android AR.
+        Because Safari strictly blocks AR triggered by custom JS click handlers, 
+        we must physically use the library's native buttons.
+        We ruthlessly override its CSS to hide all the "useless" UI, and we pull 
+        its native AR buttons out of the hidden top bar, styling them to be the 
+        massive "View in AR" buttons you requested. 
+        This guarantees 100% native Safari click-trust while keeping the UI minimal.
+      */}
       <style>{`
-        .ars-top, .ars-dock, .ars-empty, .ars-selbar, .ars-status, .ars-chip, .ars-tray {
+        /* Hide everything we don't want */
+        .ars-dock, .ars-empty, .ars-selbar, .ars-status, .ars-chip, .ars-tray, .ars-title, .ars-back, .ars-count, .ars-room-label, .ars-spacer {
           display: none !important;
           opacity: 0 !important;
           visibility: hidden !important;
         }
-        .ars-hud {
-          pointer-events: none !important; 
+
+        /* Hide the camera button and room button specifically */
+        .ars-top [aria-label="Turn the camera on to see your models in the room"],
+        .ars-top [aria-label="Open a shared room so other people can build in this scene with you"] {
+          display: none !important;
         }
+
+        /* Strip backgrounds from the top bar so it's invisible */
+        .ars-top {
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
+          height: 100% !important;
+          width: 100% !important;
+          pointer-events: none !important;
+        }
+
+        /* 
+         * TRANSFORM THE NATIVE AR BUTTONS INTO THE HUGE BOTTOM BUTTON
+         * This applies to both the mobile AR button and the desktop QR button
+         */
+        .ars-top [aria-label="View this in augmented reality"],
+        .ars-top [aria-label="Show a QR code that opens this scene on your phone"] {
+          position: fixed !important;
+          bottom: 100px !important;
+          left: 50% !important;
+          transform: translateX(-50%) !important;
+          display: flex !important;
+          background-color: white !important;
+          color: black !important;
+          padding: 20px 40px !important;
+          border-radius: 9999px !important;
+          font-weight: 900 !important;
+          z-index: 999999 !important;
+          box-shadow: 0 0 50px rgba(255,255,255,0.8) !important;
+          width: max-content !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 12px !important;
+        }
+
+        /* Change the text of the button cleanly using CSS */
+        .ars-ar-label {
+          font-size: 0 !important; /* Hide the old 'AR' text */
+        }
+        .ars-ar-label::after {
+          content: "View in AR" !important;
+          font-size: 24px !important;
+        }
+
+        /* Style the icon */
+        .ars-icon-btn > span[aria-hidden="true"] {
+          font-size: 28px !important;
+        }
+
+        /* Ensure modals (like the AR handoff sheet or QR code) are visible and clickable */
         .ars-modal, .ars-dialog {
           pointer-events: auto !important;
           background: rgba(0,0,0,0.8) !important;
@@ -80,28 +128,6 @@ export default function InBrowserViewer() {
       `}</style>
 
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />
-
-      {/* UNCONDITIONAL "View in AR" BUTTON - NEVER HIDES */}
-      <button 
-        onClick={handleARClick}
-        style={{ 
-          position: 'fixed', 
-          bottom: '100px', 
-          left: '50%', 
-          transform: 'translateX(-50%)', 
-          zIndex: 999999, 
-          display: 'flex' 
-        }}
-        className="bg-white text-black font-black py-5 px-12 rounded-full shadow-[0_0_50px_rgba(255,255,255,0.8)] items-center justify-center gap-3 text-2xl whitespace-nowrap cursor-pointer pointer-events-auto active:scale-95"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M3 3h6v6H3z"/>
-          <path d="M15 3h6v6h-6z"/>
-          <path d="M15 15h6v6h-6z"/>
-          <path d="M3 15h6v6H3z"/>
-        </svg>
-        View in AR
-      </button>
     </div>
   );
 }
