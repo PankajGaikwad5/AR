@@ -13,6 +13,14 @@ export default function InBrowserViewer() {
 
     const init = async () => {
       try {
+        // HACK: Trick the engine into thinking this is an extremely low-end device
+        // This forces the 'mobile' rendering tier (pixelRatio 1, no shadows, no HDRI)
+        // which instantly fixes the "laggy and unresponsive" frame drops on heavy models.
+        if (typeof navigator !== 'undefined') {
+          Object.defineProperty(navigator, 'deviceMemory', { get: () => 2, configurable: true });
+          Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 2, configurable: true });
+        }
+
         studioRef.current = createArStudio(containerRef.current!, {
           // @ts-ignore
           assets: [{ src: '/model.glb', title: 'Product' }],
